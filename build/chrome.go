@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	hv "github.com/hashicorp/go-version"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+
+	hv "github.com/hashicorp/go-version"
 )
 
 const (
@@ -155,7 +156,7 @@ func (c *Chrome) parseChromeDriverVersion(pkgVersion string, chromeDriverVersion
 			return matchingVersions[0], nil
 		}
 
-		const baseUrl = "https://chromedriver.storage.googleapis.com/"
+		const baseUrl = "https://storage.googleapis.com/chrome-for-testing-public/"
 		v, err := c.getLatestChromeDriver(baseUrl, pkgVersion)
 		if err != nil {
 			return "", err
@@ -166,8 +167,8 @@ func (c *Chrome) parseChromeDriverVersion(pkgVersion string, chromeDriverVersion
 }
 
 func (c *Chrome) downloadChromeDriver(dir string, version string, chromeDriverVersions map[string]string) error {
-	u := fmt.Sprintf("https://chromedriver.storage.googleapis.com/%s/chromedriver_linux64.zip", version)
-	fn := chromeDriverBinary
+	u := fmt.Sprintf("https://storage.googleapis.com/chrome-for-testing-public/%s/linux64/chromedriver_linux64.zip", version)
+	fn := fmt.Sprintf("chromedriver-linux64/%s", chromeDriverBinary)
 	if cdu, ok := chromeDriverVersions[version]; ok {
 		u = cdu
 		fn = newChromeDriverBinary
