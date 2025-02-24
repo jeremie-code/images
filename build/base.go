@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/markbates/pkger"
 	"io"
 	"log"
 	"net"
@@ -18,6 +17,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/markbates/pkger"
 )
 
 const (

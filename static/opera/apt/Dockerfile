@@ -1,16 +1,102 @@
+# TODO: to fix the opera installation
+
 FROM browsers/base:7.4.2
 
 ARG VERSION
 ARG PACKAGE=opera-stable
+# opera-stable / opera-beta / opera-developer
+ARG INSTALL_DIR=opera
 
 LABEL browser=$PACKAGE:$VERSION
+LABEL maintainer="jeremie-code"
 
-RUN  \
-        curl -s https://deb.opera.com/archive.key | apt-key add - && \
-        echo 'deb https://deb.opera.com/opera-stable/ stable non-free' > /etc/apt/sources.list.d/opera-blink.list && \
+# Set non-interactive mode for apt-get
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN \
+    # Set APT sources
+        curl -fsSL https://deb.opera.com/archive.key | gpg --dearmor | tee /usr/share/keyrings/opera.gpg > /dev/null && \
+        echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/opera.gpg] https://deb.opera.com/opera-stable/ stable non-free' | tee -a /etc/apt/sources.list.d/opera-stable.list && \
+    # Install required packages
         apt-get update && \
-        apt-get -y --no-install-recommends install libgtk-3-0 $PACKAGE=$VERSION && \
+        apt-get -y --no-install-recommends install \
+        iproute2 \
+        $PACKAGE=$VERSION && \
+        # Fix default argument
+        ( \
+            sed -i -e 's@exec -a "$0" "$HERE/opera"@& --no-sandbox --disable-gpu@' /usr/bin/$PACKAGE || \
+            sed -i -e 's@exec -a "$0" "$HERE/opera"@& --no-sandbox --disable-gpu@' /usr/bin/opera \
+        ) && \
+        # Fix permission
+        if [ -f /usr/lib/$INSTALL_DIR/opera_sandbox ]; then \
+            chown root:root /usr/lib/$INSTALL_DIR/opera_sandbox && \
+            chmod 4755 /usr/lib/$INSTALL_DIR/opera_sandbox; \
+        fi && \
+        # Symbolic links
         ( [ "$PACKAGE" != "opera-stable" ] && ln /usr/bin/$PACKAGE /usr/bin/opera ) || true && \
+        # Test installation
         opera --version && \
-        rm /etc/apt/sources.list.d/$PACKAGE.list && \
-        rm -Rf /tmp/* && rm -Rf /var/lib/apt/lists/*
+    # Clean up
+        apt-get autoclean && \
+        apt-get clean && \
+        apt-get autoremove && \
+        rm -Rf /tmp/* && \
+        rm -Rf /var/tmp/* && \
+        rm -Rf /var/lib/apt/lists/*
+
+
+
+# =====================================================================================
+# ===================================================================================
+# =====================================================================================
+
+# FROM browsers/base:7.4.2
+
+# ARG VERSION
+# ARG PACKAGE=opera-stable
+# ARG INSTALL_DIR=opera
+
+# LABEL browser=$PACKAGE:$VERSION
+# LABEL maintainer="jeremie-code"
+
+# # Set non-interactive mode for apt-get
+# ENV DEBIAN_FRONTEND=noninteractive
+
+
+# RUN \
+#     # Download Opera
+#     if [ "$PACKAGE" = "opera-stable" ]; then \
+#         curl -fSLo /tmp/opera.deb https://get.geo.opera.com/pub/opera/desktop/${VERSION}/linux/${PACKAGE}_${VERSION}_amd64.deb; \
+#     elif [ "$PACKAGE" = "opera-beta" ]; then \
+#         curl -fSLo /tmp/opera.deb https://get.geo.opera.com/pub/opera-beta/${VERSION}/linux/${PACKAGE}_${VERSION}_amd64.deb; \
+#     elif [ "$PACKAGE" = "opera-developer" ]; then \
+#         curl -fSLo /tmp/opera.deb https://get.geo.opera.com/pub/opera-developer/${VERSION}/linux/${PACKAGE}_${VERSION}_amd64.deb; \
+#     fi && \
+#     chmod +x /tmp/opera.deb && \
+#     # Install required packages
+#     apt-get update && \
+#     apt-get -y --no-install-recommends install \
+#     iproute2 \
+#     /tmp/opera.deb && \
+#     # Fix default argument
+#     ( \
+#         sed -i -e 's@exec -a "$0" "$HERE/opera"@& --no-sandbox --disable-gpu@' /usr/bin/$PACKAGE || \
+#         sed -i -e 's@exec -a "$0" "$HERE/opera"@& --no-sandbox --disable-gpu@' /usr/bin/opera \
+#     ) && \
+#     # Fix permission
+#     if [ -f /usr/lib/$INSTALL_DIR/opera_sandbox ]; then \
+#         chown root:root /usr/lib/$INSTALL_DIR/opera_sandbox && \
+#         chmod 4755 /usr/lib/$INSTALL_DIR/opera_sandbox; \
+#     fi && \
+#     # Symbolic links
+#     ( [ "$PACKAGE" != "opera-stable" ] && ln /usr/bin/$PACKAGE /usr/bin/opera ) || true && \
+#     # Test installation
+#     opera --version && \
+#     # Clean up
+#     apt-get autoclean && \
+#     apt-get clean && \
+#     apt-get autoremove && \
+#     rm -Rf /tmp/* && \
+#     rm -Rf /var/tmp/* && \
+#     rm -Rf /var/lib/apt/lists/*
+

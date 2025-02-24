@@ -2,9 +2,11 @@
 .idea
 *.deb
 *.bak
-images
+images*
 pkged.go
 
 .DS_Store
 
 selenium/barrier/barrier
+
+.vscode
