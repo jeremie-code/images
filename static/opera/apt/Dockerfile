@@ -17,14 +17,21 @@ RUN \
     # Set APT sources
         curl -fsSL https://deb.opera.com/archive.key | gpg --dearmor | tee /usr/share/keyrings/opera.gpg > /dev/null && \
         echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/opera.gpg] https://deb.opera.com/opera-stable/ stable non-free' | tee -a /etc/apt/sources.list.d/opera-stable.list && \
-    # Install required packages
+        # Install required packages
         apt-get update && \
         apt-get -y --no-install-recommends install \
         iproute2 \
         $PACKAGE=$VERSION && \
+        # Download and install libffmpeg.so
+        curl -L -o /tmp/0.97.0-linux-x64.zip https://github.com/nwjs-ffmpeg-prebuilt/nwjs-ffmpeg-prebuilt/releases/download/0.97.0/0.97.0-linux-x64.zip && \
+        unzip /tmp/0.97.0-linux-x64.zip -d /tmp/0.97.0-linux-x64 && \
+        mkdir -p /usr/lib/x86_64-linux-gnu/ && \
+        mv /tmp/0.97.0-linux-x64/libffmpeg.so /usr/lib/x86_64-linux-gnu/ && \
+        # Update library cache
+        ldconfig && \
         # Fix default argument
         ( \
-            sed -i -e 's@exec -a "$0" "$HERE/opera"@& --no-sandbox --disable-gpu@' /usr/bin/$PACKAGE || \
+            # sed -i -e 's@exec -a "$0" "$HERE/opera"@& --no-sandbox --disable-gpu@' /usr/bin/$PACKAGE || \
             sed -i -e 's@exec -a "$0" "$HERE/opera"@& --no-sandbox --disable-gpu@' /usr/bin/opera \
         ) && \
         # Fix permission
@@ -78,9 +85,16 @@ RUN \
 #     apt-get -y --no-install-recommends install \
 #     iproute2 \
 #     /tmp/opera.deb && \
+#     # Download and install libffmpeg.so
+#     curl -L -o /tmp/0.97.0-linux-x64.zip https://github.com/nwjs-ffmpeg-prebuilt/nwjs-ffmpeg-prebuilt/releases/download/0.97.0/0.97.0-linux-x64.zip && \
+#     unzip /tmp/0.97.0-linux-x64.zip -d /tmp/0.97.0-linux-x64 && \
+#     mkdir -p /usr/lib/x86_64-linux-gnu/ && \
+#     mv /tmp/0.97.0-linux-x64/libffmpeg.so /usr/lib/x86_64-linux-gnu/ && \
+#     # Update library cache
+#     ldconfig && \
 #     # Fix default argument
 #     ( \
-#         sed -i -e 's@exec -a "$0" "$HERE/opera"@& --no-sandbox --disable-gpu@' /usr/bin/$PACKAGE || \
+#         # sed -i -e 's@exec -a "$0" "$HERE/opera"@& --no-sandbox --disable-gpu@' /usr/bin/$PACKAGE || \
 #         sed -i -e 's@exec -a "$0" "$HERE/opera"@& --no-sandbox --disable-gpu@' /usr/bin/opera \
 #     ) && \
 #     # Fix permission
@@ -99,4 +113,3 @@ RUN \
 #     rm -Rf /tmp/* && \
 #     rm -Rf /var/tmp/* && \
 #     rm -Rf /var/lib/apt/lists/*
-
