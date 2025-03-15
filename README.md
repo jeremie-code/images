@@ -12,6 +12,8 @@ This repository contains [Docker](http://docker.com/) build files to be used for
 
 ### Edge: [![Edge Docker Pulls](https://img.shields.io/docker/pulls/jeremiecode/vnc_edge.svg)](https://hub.docker.com/r/jeremiecode/vnc_edge)
 
+### Opera: [![Opera Docker Pulls](https://img.shields.io/docker/pulls/jeremiecode/vnc_opera.svg)](https://hub.docker.com/r/jeremiecode/vnc_opera)
+
 ## Building Images
 
 Moved to: http://aerokube.com/images/latest/#_building_images
